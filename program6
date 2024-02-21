@@ -1,0 +1,119 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_PROCESS 10
+
+struct Process {
+    int id;
+    int burst_time;
+    int priority;
+    int remaining_time;
+};
+
+struct Node {
+    struct Process *process;
+    struct Node *next;
+};
+
+struct PriorityQueue {
+    struct Node *front;
+};
+
+// Function to create a new node
+struct Node *createNode(struct Process *process) {
+    struct Node *newNode = (struct Node *)malloc(sizeof(struct Node));
+    newNode->process = process;
+    newNode->next = NULL;
+    return newNode;
+}
+
+// Function to create an empty priority queue
+struct PriorityQueue *createPriorityQueue() {
+    struct PriorityQueue *queue = (struct PriorityQueue *)malloc(sizeof(struct PriorityQueue));
+    queue->front = NULL;
+    return queue;
+}
+
+// Function to insert a process into the priority queue based on priority
+void enqueue(struct PriorityQueue *queue, struct Process *process) {
+    struct Node *newNode = createNode(process);
+
+    if (queue->front == NULL || process->priority < queue->front->process->priority) {
+        newNode->next = queue->front;
+        queue->front = newNode;
+    } else {
+        struct Node *temp = queue->front;
+        while (temp->next != NULL && temp->next->process->priority <= process->priority) {
+            temp = temp->next;
+        }
+        newNode->next = temp->next;
+        temp->next = newNode;
+    }
+}
+
+// Function to dequeue the front process from the priority queue
+struct Process *dequeue(struct PriorityQueue *queue) {
+    if (queue->front == NULL) {
+        return NULL;
+    }
+
+    struct Node *temp = queue->front;
+    struct Process *dequeuedProcess = temp->process;
+    queue->front = temp->next;
+    free(temp);
+    return dequeuedProcess;
+}
+
+// Function to perform preemptive priority scheduling
+void priorityScheduling(struct Process processes[], int n) {
+    struct PriorityQueue *readyQueue = createPriorityQueue();
+    int currentTime = 0;
+
+    while (1) {
+        // Enqueue processes that arrive at the current time
+        for (int i = 0; i < n; i++) {
+            if (processes[i].remaining_time > 0 && processes[i].burst_time + processes[i].priority <= currentTime) {
+                enqueue(readyQueue, &processes[i]);
+            }
+        }
+
+        // Break the loop if all processes are executed
+        if (readyQueue->front == NULL && currentTime >= n) {
+            break;
+        }
+
+        // Dequeue the highest priority process
+        struct Process *currentProcess = dequeue(readyQueue);
+
+        // Execute the process for 1 unit of time
+        printf("Time %d: Executing Process %d\n", currentTime, currentProcess->id);
+        currentProcess->remaining_time--;
+
+        // Update the current time
+        currentTime++;
+    }
+}
+
+int main() {
+    int n;
+    printf("Enter the number of processes: ");
+    scanf("%d", &n);
+
+    struct Process processes[MAX_PROCESS];
+
+    // Input process details
+    for (int i = 0; i < n; i++) {
+        processes[i].id = i + 1;
+        printf("Enter burst time for Process %d: ", i + 1);
+        scanf("%d", &processes[i].burst_time);
+        printf("Enter priority for Process %d: ", i + 1);
+        scanf("%d", &processes[i].priority);
+        processes[i].remaining_time = processes[i].burst_time;
+    }
+
+    // Perform preemptive priority scheduling
+    priorityScheduling(processes, n);
+
+    return 0;
+}
+
