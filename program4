@@ -1,0 +1,101 @@
+#include <stdio.h>
+#include <stdbool.h>
+
+struct Process {
+    int process_id;
+    int arrival_time;
+    int burst_time;
+    int remaining_time;
+    int completion_time;
+    int turnaround_time;
+    int waiting_time;
+    bool completed;
+};
+
+int findShortestJob(struct Process processes[], int n, int current_time) {
+    int shortest_job_index = -1;
+    int shortest_burst_time = _INT_MAX_;
+
+    for (int i = 0; i < n; i++) {
+        if (!processes[i].completed && processes[i].arrival_time <= current_time && processes[i].remaining_time < shortest_burst_time) {
+            shortest_burst_time = processes[i].remaining_time;
+            shortest_job_index = i;
+        }
+    }
+
+    return shortest_job_index;
+}
+
+void calculateTimes(struct Process processes[], int n) {
+    int total_waiting_time = 0;
+    int total_turnaround_time = 0;
+
+    for (int i = 0; i < n; i++) {
+        processes[i].turnaround_time = processes[i].completion_time - processes[i].arrival_time;
+        processes[i].waiting_time = processes[i].turnaround_time - processes[i].burst_time;
+
+        total_waiting_time += processes[i].waiting_time;
+        total_turnaround_time += processes[i].turnaround_time;
+    }
+
+    float average_waiting_time = (float) total_waiting_time / n;
+    float average_turnaround_time = (float) total_turnaround_time / n;
+
+    printf("Process\tArrival Time\tBurst Time\tCompletion Time\tTurnaround Time\tWaiting Time\n");
+    for (int i = 0; i < n; i++) {
+        printf("%d\t\t%d\t\t%d\t\t%d\t\t%d\t\t\t%d\n", processes[i].process_id, processes[i].arrival_time,
+               processes[i].burst_time, processes[i].completion_time, processes[i].turnaround_time,
+               processes[i].waiting_time);
+    }
+
+    printf("\nAverage Waiting Time = %.2f\n", average_waiting_time);
+    printf("Average Turnaround Time = %.2f\n", average_turnaround_time);
+}
+
+void scheduleProcesses(struct Process processes[], int n) {
+    int current_time = 0;
+    int completed_processes = 0;
+
+    while (completed_processes < n) {
+        int shortest_job_index = findShortestJob(processes, n, current_time);
+
+        if (shortest_job_index == -1) {
+            printf("No process available at time %d\n", current_time);
+            current_time++;
+            continue;
+        }
+
+        processes[shortest_job_index].remaining_time--;
+
+        if (processes[shortest_job_index].remaining_time == 0) {
+            processes[shortest_job_index].completed = true;
+            completed_processes++;
+            processes[shortest_job_index].completion_time = current_time + 1;
+        }
+
+        current_time++;
+    }
+}
+
+int main() {
+    int n;
+    printf("Enter the number of processes: ");
+    scanf("%d", &n);
+
+    struct Process processes[n];
+
+    printf("Enter arrival time and burst time for each process:\n");
+    for (int i = 0; i < n; i++) {
+        printf("Process %d:\n", i + 1);
+        processes[i].process_id = i + 1;
+        scanf("%d %d", &processes[i].arrival_time, &processes[i].burst_time);
+        processes[i].remaining_time = processes[i].burst_time;
+        processes[i].completed = false;
+    }
+
+    scheduleProcesses(processes, n);
+    calculateTimes(processes, n);
+
+    return 0;
+}
+
