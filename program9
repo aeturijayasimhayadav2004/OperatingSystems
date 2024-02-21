@@ -1,0 +1,72 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+
+#define SHM_SIZE 1024
+
+int main() {
+    key_t key = ftok("shared_memory_example", 65); // Generate a key for the shared memory segment
+
+    // Create a shared memory segment or get the identifier if it already exists
+    int shmid = shmget(key, SHM_SIZE, IPC_CREAT | 0666);
+    if (shmid == -1) {
+        perror("shmget");
+        exit(EXIT_FAILURE);
+    }
+
+    // Attach the shared memory segment to the process's address space
+    char *shared_memory = (char*) shmat(shmid, NULL, 0);
+    if (shared_memory == (char*) -1) {
+        perror("shmat");
+        exit(EXIT_FAILURE);
+    }
+
+    // Write data to the shared memory
+    sprintf(shared_memory, "Hello from the writer process!");
+
+    // Detach the shared memory segment from the process's address space
+    if (shmdt(shared_memory) == -1) {
+        perror("shmdt");
+        exit(EXIT_FAILURE);
+    }
+
+    // Fork a new process
+    pid_t pid = fork();
+
+    if (pid == -1) {
+        perror("fork");
+        exit(EXIT_FAILURE);
+    }
+
+    if (pid == 0) { // Child process (reader)
+        // Attach the shared memory segment to the child process's address space
+        char *shared_memory_child = (char*) shmat(shmid, NULL, 0);
+        if (shared_memory_child == (char*) -1) {
+            perror("shmat");
+            exit(EXIT_FAILURE);
+        }
+
+        // Read data from the shared memory
+        printf("Child Process: %s\n", shared_memory_child);
+
+        // Detach the shared memory segment from the child process's address space
+        if (shmdt(shared_memory_child) == -1) {
+            perror("shmdt");
+            exit(EXIT_FAILURE);
+        }
+    } else { // Parent process (writer)
+        // Wait for the child process to finish
+        wait(NULL);
+
+        // Delete the shared memory segment
+        if (shmctl(shmid, IPC_RMID, NULL) == -1) {
+            perror("shmctl");
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    return 0;
+}
+
