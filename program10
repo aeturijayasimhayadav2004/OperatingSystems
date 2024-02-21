@@ -1,0 +1,70 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/msg.h>
+
+// Define a structure for the message
+struct message {
+    long mtype;  // Message type
+    char mtext[100];  // Message text
+};
+
+int main() {
+    key_t key;
+    int msgid;
+
+    // Generate a unique key for the message queue
+    key = ftok("msgqueue_example", 'A');
+    if (key == -1) {
+        perror("ftok");
+        exit(EXIT_FAILURE);
+    }
+
+    // Create a message queue or get the identifier of an existing one
+    msgid = msgget(key, 0666 | IPC_CREAT);
+    if (msgid == -1) {
+        perror("msgget");
+        exit(EXIT_FAILURE);
+    }
+
+    // Fork a child process
+    pid_t child_pid = fork();
+
+    if (child_pid == -1) {
+        perror("fork");
+        exit(EXIT_FAILURE);
+    }
+
+    if (child_pid == 0) {  // Child process
+        struct message msg;
+        
+        // Receive a message from the queue
+        msgrcv(msgid, &msg, sizeof(struct message) - sizeof(long), 1, 0);
+        
+        printf("Child Process Received Message: %s\n", msg.mtext);
+    } else {  // Parent process
+        struct message msg;
+
+        // Set the message type
+        msg.mtype = 1;
+
+        // Set the message text
+        printf("Enter a message to send to the child process: ");
+        fgets(msg.mtext, sizeof(msg.mtext), stdin);
+
+        // Send the message to the queue
+        msgsnd(msgid, &msg, sizeof(struct message) - sizeof(long), 0);
+
+        printf("Parent Process Sent Message: %s\n", msg.mtext);
+
+        // Wait for the child process to complete
+        wait(NULL);
+
+        // Remove the message queue
+        msgctl(msgid, IPC_RMID, NULL);
+    }
+
+    return 0;
+}
