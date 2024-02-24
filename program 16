@@ -1,0 +1,120 @@
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Structure to represent an employee
+typedef struct {
+    int empId;
+    char empName[50];
+    float empSalary;
+} Employee;
+
+// Function declarations
+void addEmployee();
+void displayAllEmployees();
+void searchEmployee(int empId);
+
+int main() {
+    int choice;
+    do {
+        printf("\n1. Add Employee\n");
+        printf("2. Display All Employees\n");
+        printf("3. Search Employee\n");
+        printf("4. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                addEmployee();
+                break;
+            case 2:
+                displayAllEmployees();
+                break;
+            case 3: {
+                int empId;
+                printf("Enter the Employee ID to search: ");
+                scanf("%d", &empId);
+                searchEmployee(empId);
+                break;
+            }
+            case 4:
+                printf("Exiting the program.\n");
+                break;
+            default:
+                printf("Invalid choice. Please enter a valid option.\n");
+        }
+
+    } while (choice != 4);
+
+    return 0;
+}
+
+void addEmployee() {
+    Employee emp;
+    FILE *file = fopen("employee.dat", "ab");  // "ab" opens the file in binary append mode
+
+    if (file == NULL) {
+        printf("Error opening file.\n");
+        return;
+    }
+
+    // Input employee details
+    printf("Enter Employee ID: ");
+    scanf("%d", &emp.empId);
+    printf("Enter Employee Name: ");
+    scanf("%s", emp.empName);
+    printf("Enter Employee Salary: ");
+    scanf("%f", &emp.empSalary);
+
+    // Write employee details to the file
+    fwrite(&emp, sizeof(Employee), 1, file);
+
+    fclose(file);
+    printf("Employee added successfully.\n");
+}
+
+void displayAllEmployees() {
+    Employee emp;
+    FILE *file = fopen("employee.dat", "rb");  // "rb" opens the file in binary read mode
+
+    if (file == NULL) {
+        printf("Error opening file.\n");
+        return;
+    }
+
+    printf("\nEmployee Details:\n");
+    while (fread(&emp, sizeof(Employee), 1, file) == 1) {
+        printf("Employee ID: %d, Name: %s, Salary: %.2f\n", emp.empId, emp.empName, emp.empSalary);
+    }
+
+    fclose(file);
+}
+
+void searchEmployee(int empId) {
+    Employee emp;
+    FILE *file = fopen("employee.dat", "rb");  // "rb" opens the file in binary read mode
+
+    if (file == NULL) {
+        printf("Error opening file.\n");
+        return;
+    }
+
+    int found = 0;
+    while (fread(&emp, sizeof(Employee), 1, file) == 1) {
+        if (emp.empId == empId) {
+            printf("Employee found:\n");
+            printf("Employee ID: %d, Name: %s, Salary: %.2f\n", emp.empId, emp.empName, emp.empSalary);
+            found = 1;
+            break;
+        }
+    }
+
+    if (!found) {
+        printf("Employee with ID %d not found.\n", empId);
+    }
+
+    fclose(file);
+}
