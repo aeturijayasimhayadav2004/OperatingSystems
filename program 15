@@ -1,0 +1,163 @@
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_DIRECTORIES 10
+#define MAX_FILES_PER_DIRECTORY 10
+#define MAX_FILENAME_LENGTH 50
+#define MAX_DIRECTORY_NAME_LENGTH 50
+
+// Structure to represent a file
+typedef struct {
+    char filename[MAX_FILENAME_LENGTH];
+} File;
+
+// Structure to represent a directory
+typedef struct {
+    char dirname[MAX_DIRECTORY_NAME_LENGTH];
+    File files[MAX_FILES_PER_DIRECTORY];
+    int fileCount;
+} Directory;
+
+// Array to store directories
+Directory directories[MAX_DIRECTORIES];
+int directoryCount = 0;
+
+// Function declarations
+void displayDirectories();
+void displayFilesInDirectory(int dirIndex);
+void addDirectory(char *dirname);
+void addFile(int dirIndex, char *filename);
+void deleteFile(int dirIndex, char *filename);
+
+int main() {
+    int choice;
+    int selectedDirectory;
+    char dirname[MAX_DIRECTORY_NAME_LENGTH];
+    char filename[MAX_FILENAME_LENGTH];
+
+    do {
+        printf("1. Display Directories\n");
+        printf("2. Display Files in a Directory\n");
+        printf("3. Add Directory\n");
+        printf("4. Add File to Directory\n");
+        printf("5. Delete File from Directory\n");
+        printf("6. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                displayDirectories();
+                break;
+            case 2:
+                printf("Enter the directory index: ");
+                scanf("%d", &selectedDirectory);
+                if (selectedDirectory >= 0 && selectedDirectory < directoryCount) {
+                    displayFilesInDirectory(selectedDirectory);
+                } else {
+                    printf("Invalid directory index.\n");
+                }
+                break;
+            case 3:
+                printf("Enter the directory name to add: ");
+                scanf("%s", dirname);
+                addDirectory(dirname);
+                break;
+            case 4:
+                printf("Enter the directory index to add the file: ");
+                scanf("%d", &selectedDirectory);
+                if (selectedDirectory >= 0 && selectedDirectory < directoryCount) {
+                    printf("Enter the filename to add: ");
+                    scanf("%s", filename);
+                    addFile(selectedDirectory, filename);
+                } else {
+                    printf("Invalid directory index.\n");
+                }
+                break;
+            case 5:
+                printf("Enter the directory index to delete the file: ");
+                scanf("%d", &selectedDirectory);
+                if (selectedDirectory >= 0 && selectedDirectory < directoryCount) {
+                    printf("Enter the filename to delete: ");
+                    scanf("%s", filename);
+                    deleteFile(selectedDirectory, filename);
+                } else {
+                    printf("Invalid directory index.\n");
+                }
+                break;
+            case 6:
+                printf("Exiting the program.\n");
+                break;
+            default:
+                printf("Invalid choice. Please enter a valid option.\n");
+        }
+
+    } while (choice != 6);
+
+    return 0;
+}
+
+void displayDirectories() {
+    if (directoryCount == 0) {
+        printf("No directories.\n");
+    } else {
+        printf("Directories:\n");
+        for (int i = 0; i < directoryCount; i++) {
+            printf("%d. %s\n", i, directories[i].dirname);
+        }
+    }
+}
+
+void displayFilesInDirectory(int dirIndex) {
+    if (directories[dirIndex].fileCount == 0) {
+        printf("No files in the directory '%s'.\n", directories[dirIndex].dirname);
+    } else {
+        printf("Files in the directory '%s':\n", directories[dirIndex].dirname);
+        for (int i = 0; i < directories[dirIndex].fileCount; i++) {
+            printf("%s\n", directories[dirIndex].files[i].filename);
+        }
+    }
+}
+
+void addDirectory(char *dirname) {
+    if (directoryCount < MAX_DIRECTORIES) {
+        strcpy(directories[directoryCount].dirname, dirname);
+        directories[directoryCount].fileCount = 0;
+        directoryCount++;
+        printf("Directory '%s' added successfully.\n", dirname);
+    } else {
+        printf("Cannot add directory. Maximum limit reached.\n");
+    }
+}
+
+void addFile(int dirIndex, char *filename) {
+    if (directories[dirIndex].fileCount < MAX_FILES_PER_DIRECTORY) {
+        strcpy(directories[dirIndex].files[directories[dirIndex].fileCount].filename, filename);
+        directories[dirIndex].fileCount++;
+        printf("File '%s' added to directory '%s' successfully.\n", filename, directories[dirIndex].dirname);
+    } else {
+        printf("Cannot add file. Directory is full.\n");
+    }
+}
+
+void deleteFile(int dirIndex, char *filename) {
+    int found = 0;
+    for (int i = 0; i < directories[dirIndex].fileCount; i++) {
+        if (strcmp(directories[dirIndex].files[i].filename, filename) == 0) {
+            // Shift files to fill the gap
+            for (int j = i; j < directories[dirIndex].fileCount - 1; j++) {
+                strcpy(directories[dirIndex].files[j].filename, directories[dirIndex].files[j + 1].filename);
+            }
+            directories[dirIndex].fileCount--;
+            found = 1;
+            printf("File '%s' deleted from directory '%s' successfully.\n", filename, directories[dirIndex].dirname);
+            break;
+        }
+    }
+
+    if (!found) {
+        printf("File '%s' not found in directory '%s'.\n", filename, directories[dirIndex].dirname);
+    }
+}
