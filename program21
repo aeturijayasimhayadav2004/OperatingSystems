@@ -1,0 +1,74 @@
+#include <stdio.h>
+
+#define MAX_BLOCKS 100
+
+int memory[MAX_BLOCKS]; // Represents the memory blocks
+int blockSize[MAX_BLOCKS]; // Represents the size of each memory block
+int processSize[MAX_BLOCKS]; // Represents the size of each process
+
+// Function to initialize memory blocks
+void initializeMemory(int n) {
+    for (int i = 0; i < n; i++) {
+        memory[i] = -1; // -1 indicates that the memory block is unallocated
+    }
+}
+
+// Function to display memory status
+void displayMemory(int n) {
+    printf("Memory Status:\n");
+    for (int i = 0; i < n; i++) {
+        if (memory[i] != -1) {
+            printf("Block %d: Allocated to Process %d (Size %d)\n", i, memory[i], processSize[memory[i]]);
+        } else {
+            printf("Block %d: Unallocated\n", i);
+        }
+    }
+    printf("\n");
+}
+
+// Function to allocate memory using worst-fit algorithm
+void worstFit(int blockSizeCount, int processSizeCount) {
+    for (int i = 0; i < processSizeCount; i++) {
+        int worstFitIndex = -1;
+        for (int j = 0; j < blockSizeCount; j++) {
+            if (memory[j] == -1 && blockSize[j] >= processSize[i]) {
+                if (worstFitIndex == -1 || blockSize[j] > blockSize[worstFitIndex]) {
+                    worstFitIndex = j;
+                }
+            }
+        }
+
+        if (worstFitIndex != -1) {
+            memory[worstFitIndex] = i; // Allocate memory to process i
+        } else {
+            printf("Process %d cannot be allocated.\n", i);
+        }
+    }
+}
+
+int main() {
+    int blockSizeCount, processSizeCount;
+
+    printf("Enter the number of memory blocks: ");
+    scanf("%d", &blockSizeCount);
+
+    printf("Enter the size of each memory block:\n");
+    for (int i = 0; i < blockSizeCount; i++) {
+        scanf("%d", &blockSize[i]);
+    }
+
+    printf("Enter the number of processes: ");
+    scanf("%d", &processSizeCount);
+
+    printf("Enter the size of each process:\n");
+    for (int i = 0; i < processSizeCount; i++) {
+        scanf("%d", &processSize[i]);
+    }
+
+    initializeMemory(blockSizeCount);
+    worstFit(blockSizeCount, processSizeCount);
+
+    displayMemory(blockSizeCount);
+
+    return 0;
+}
