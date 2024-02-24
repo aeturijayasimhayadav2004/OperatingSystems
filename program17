@@ -1,0 +1,211 @@
+#include <stdio.h>
+
+#define MAX_PROCESSES 5
+#define MAX_RESOURCES 3
+
+int available[MAX_RESOURCES];
+int maximum[MAX_PROCESSES][MAX_RESOURCES];
+int allocation[MAX_PROCESSES][MAX_RESOURCES];
+int need[MAX_PROCESSES][MAX_RESOURCES];
+
+void initialize() {
+    // Initialize available resources
+    printf("Enter the available resources:\n");
+    for (int i = 0; i < MAX_RESOURCES; ++i) {
+        scanf("%d", &available[i]);
+    }
+
+    // Initialize maximum resources for each process
+    printf("Enter the maximum resources for each process:\n");
+    for (int i = 0; i < MAX_PROCESSES; ++i) {
+        printf("For Process %d: ", i + 1);
+        for (int j = 0; j < MAX_RESOURCES; ++j) {
+            scanf("%d", &maximum[i][j]);
+        }
+    }
+
+    // Initialize allocation and need matrix
+    for (int i = 0; i < MAX_PROCESSES; ++i) {
+        for (int j = 0; j < MAX_RESOURCES; ++j) {
+            allocation[i][j] = 0;
+            need[i][j] = maximum[i][j];
+        }
+    }
+}
+
+void displayMatrix(int matrix[MAX_PROCESSES][MAX_RESOURCES]) {
+    for (int i = 0; i < MAX_PROCESSES; ++i) {
+        for (int j = 0; j < MAX_RESOURCES; ++j) {
+            printf("%d\t", matrix[i][j]);
+        }
+        printf("\n");
+    }
+}
+
+int requestResources(int process, int request[]) {
+    // Check if request is less than need
+    for (int i = 0; i < MAX_RESOURCES; ++i) {
+        if (request[i] > need[process][i]) {
+            printf("Error: Request exceeds maximum claim\n");
+            return -1;
+        }
+    }
+
+    // Check if request is less than available
+    for (int i = 0; i < MAX_RESOURCES; ++i) {
+        if (request[i] > available[i]) {
+            printf("Process %d must wait. Insufficient resources available.\n", process + 1);
+            return 0;
+        }
+    }
+
+    // Try to allocate resources temporarily
+    for (int i = 0; i < MAX_RESOURCES; ++i) {
+        available[i] -= request[i];
+        allocation[process][i] += request[i];
+        need[process][i] -= request[i];
+    }
+
+    // Check if the system is still in a safe state after the allocation
+    if (isSafe()) {
+        printf("Resources allocated successfully to Process %d\n", process + 1);
+        return 1;
+    } else {
+        // Rollback the allocation if it leads to an unsafe state
+        for (int i = 0; i < MAX_RESOURCES; ++i) {
+            available[i] += request[i];
+            allocation[process][i] -= request[i];
+            need[process][i] += request[i];
+        }
+
+        printf("Process %d must wait. Resource allocation would lead to an unsafe state.\n", process + 1);
+        return 0;
+    }
+}
+
+int releaseResources(int process, int release[]) {
+    // Check if release is less than allocation
+    for (int i = 0; i < MAX_RESOURCES; ++i) {
+        if (release[i] > allocation[process][i]) {
+            printf("Error: Trying to release more resources than allocated\n");
+            return -1;
+        }
+    }
+
+    // Release resources
+    for (int i = 0; i < MAX_RESOURCES; ++i) {
+        available[i] += release[i];
+        allocation[process][i] -= release[i];
+        need[process][i] += release[i];
+    }
+
+    printf("Resources released successfully by Process %d\n", process + 1);
+    return 1;
+}
+
+int isSafe() {
+    int work[MAX_RESOURCES];
+    int finish[MAX_PROCESSES];
+
+    // Initialize work and finish arrays
+    for (int i = 0; i < MAX_RESOURCES; ++i) {
+        work[i] = available[i];
+    }
+
+    for (int i = 0; i < MAX_PROCESSES; ++i) {
+        finish[i] = 0;
+    }
+
+    int count = 0;
+
+    // Check for a safe sequence
+    while (count < MAX_PROCESSES) {
+        int found = 0;
+
+        for (int i = 0; i < MAX_PROCESSES; ++i) {
+            if (finish[i] == 0) {
+                int j;
+                for (j = 0; j < MAX_RESOURCES; ++j) {
+                    if (need[i][j] > work[j]) {
+                        break;
+                    }
+                }
+
+                if (j == MAX_RESOURCES) {
+                    // Process can complete
+                    for (int k = 0; k < MAX_RESOURCES; ++k) {
+                        work[k] += allocation[i][k];
+                    }
+
+                    finish[i] = 1;
+                    printf("Process %d -> ", i + 1);
+                    count++;
+                    found = 1;
+                }
+            }
+        }
+
+        if (!found) {
+            // No safe sequence
+            printf("No safe sequence found.\n");
+            return 0;
+        }
+    }
+
+    printf("Safe sequence found.\n");
+    return 1;
+}
+
+int main() {
+    int choice, process;
+    int request[MAX_RESOURCES];
+    int release[MAX_RESOURCES];
+
+    initialize();
+
+    do {
+        printf("\n1. Request Resources\n");
+        printf("2. Release Resources\n");
+        printf("3. Display Matrix\n");
+        printf("4. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                printf("Enter the process number (1-%d): ", MAX_PROCESSES);
+                scanf("%d", &process);
+
+                if (process < 1 || process > MAX_PROCESSES) {
+                    printf("Invalid process number\n");
+                    break;
+                }
+
+                printf("Enter the resource request for Process %d: ", process);
+                for (int i = 0; i < MAX_RESOURCES; ++i) {
+                    scanf("%d", &request[i]);
+                }
+
+                requestResources(process - 1, request);
+                break;
+
+            case 2:
+                printf("Enter the process number (1-%d): ", MAX_PROCESSES);
+                scanf("%d", &process);
+
+                if (process < 1 || process > MAX_PROCESSES) {
+                    printf("Invalid process number\n");
+                    break;
+                }
+
+                printf("Enter the resource release for Process %d: ", process);
+                for (int i = 0; i < MAX_RESOURCES; ++i) {
+                    scanf("%d", &release[i]);
+                }
+
+                releaseResources(process - 1, release);
+                break;
+
+            case 3:
+                printf("\nMaximum Matrix:\n");
+               
