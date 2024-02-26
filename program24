@@ -1,0 +1,55 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <unistd.h>
+
+int main() {
+    int fileDescriptor;
+    char fileName[] = "example.txt";
+    char buffer[100];
+    ssize_t bytesRead, bytesWritten;
+
+    // Open or create a file for writing (O_CREAT) and reading (O_RDWR)
+    fileDescriptor = open(fileName, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
+    
+    if (fileDescriptor == -1) {
+        perror("Error opening file");
+        exit(EXIT_FAILURE);
+    }
+
+    // Write to the file
+    const char* message = "Hello, UNIX System Calls!";
+    bytesWritten = write(fileDescriptor, message, strlen(message));
+
+    if (bytesWritten == -1) {
+        perror("Error writing to file");
+        close(fileDescriptor);
+        exit(EXIT_FAILURE);
+    }
+
+    printf("Successfully wrote to the file.\n");
+
+    // Move the file cursor to the beginning
+    lseek(fileDescriptor, 0, SEEK_SET);
+
+    // Read from the file
+    bytesRead = read(fileDescriptor, buffer, sizeof(buffer));
+
+    if (bytesRead == -1) {
+        perror("Error reading from file");
+        close(fileDescriptor);
+        exit(EXIT_FAILURE);
+    }
+
+    printf("Read from the file: %.*s\n", (int)bytesRead, buffer);
+
+    // Close the file
+    if (close(fileDescriptor) == -1) {
+        perror("Error closing file");
+        exit(EXIT_FAILURE);
+    }
+
+    printf("File closed successfully.\n");
+
+    return 0;
+}
