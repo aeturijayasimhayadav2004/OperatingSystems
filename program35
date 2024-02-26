@@ -1,0 +1,72 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Define the maximum size of the index block and data block
+#define MAX_INDEX_BLOCKS 100
+#define MAX_DATA_BLOCKS 100
+
+// Define the size of each record
+#define BLOCK_SIZE 50
+
+// Structure to represent a data block in the file
+struct DataBlock {
+    int blockNumber;
+    char data[BLOCK_SIZE];
+};
+
+// Structure to represent an index block
+struct IndexBlock {
+    int indexNumber;
+    int dataBlockPointer;
+};
+
+// Function to simulate the file allocation strategy
+void simulateIndexBlockAllocation(struct DataBlock dataBlocks[], struct IndexBlock indexBlock[], int numBlocks) {
+    // Print the header
+    printf("Block Number\tData\n");
+
+    // Print each data block using the index block
+    for (int i = 0; i < numBlocks; i++) {
+        int dataBlockNumber = indexBlock[i].dataBlockPointer;
+
+        printf("%d\t\t%s\n", dataBlockNumber, dataBlocks[dataBlockNumber - 1].data);
+    }
+}
+
+int main() {
+    int numBlocks;
+
+    // Get the number of blocks from the user
+    printf("Enter the number of blocks: ");
+    scanf("%d", &numBlocks);
+
+    if (numBlocks <= 0 || numBlocks > MAX_DATA_BLOCKS) {
+        printf("Invalid number of blocks.\n");
+        return 1;
+    }
+
+    // Create an array to store the data blocks
+    struct DataBlock dataBlocks[MAX_DATA_BLOCKS];
+
+    // Initialize the data blocks
+    for (int i = 0; i < numBlocks; i++) {
+        dataBlocks[i].blockNumber = i + 1;
+        printf("Enter data for block %d: ", i + 1);
+        scanf("%s", dataBlocks[i].data);
+    }
+
+    // Create an array to store the index block
+    struct IndexBlock indexBlock[MAX_INDEX_BLOCKS];
+
+    // Initialize the index block
+    for (int i = 0; i < numBlocks; i++) {
+        indexBlock[i].indexNumber = i + 1;
+        indexBlock[i].dataBlockPointer = i + 1;
+    }
+
+    // Simulate the index block allocation strategy
+    simulateIndexBlockAllocation(dataBlocks, indexBlock, numBlocks);
+
+    return 0;
+}
