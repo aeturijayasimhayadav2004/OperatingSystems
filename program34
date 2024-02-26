@@ -1,0 +1,54 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Define the maximum size of the records
+#define MAX_RECORDS 100
+
+// Define the size of each record
+#define RECORD_SIZE 50
+
+// Structure to represent a record in the file
+struct Record {
+    int recordNumber;
+    char data[RECORD_SIZE];
+};
+
+// Function to simulate the file allocation strategy
+void simulateSequentialFile(struct Record records[], int numRecords) {
+    // Print the header
+    printf("Record Number\tData\n");
+
+    // Print each record sequentially
+    for (int i = 0; i < numRecords; i++) {
+        printf("%d\t\t%s\n", records[i].recordNumber, records[i].data);
+    }
+}
+
+int main() {
+    int numRecords;
+
+    // Get the number of records from the user
+    printf("Enter the number of records: ");
+    scanf("%d", &numRecords);
+
+    if (numRecords <= 0 || numRecords > MAX_RECORDS) {
+        printf("Invalid number of records.\n");
+        return 1;
+    }
+
+    // Create an array to store the records
+    struct Record records[MAX_RECORDS];
+
+    // Initialize the records
+    for (int i = 0; i < numRecords; i++) {
+        records[i].recordNumber = i + 1;
+        printf("Enter data for record %d: ", i + 1);
+        scanf("%s", records[i].data);
+    }
+
+    // Simulate the sequential file allocation strategy
+    simulateSequentialFile(records, numRecords);
+
+    return 0;
+}
