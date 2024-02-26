@@ -1,0 +1,86 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_PAGES 10
+
+void lruPageReplacement(int pageReferences[], int numReferences, int capacity) {
+    int pageFrame[capacity];
+    int counter[capacity];
+    int pageFaults = 0;
+
+    // Initialize page frames and counters
+    for (int i = 0; i < capacity; i++) {
+        pageFrame[i] = -1;
+        counter[i] = 0;
+    }
+
+    // Simulate page references
+    for (int i = 0; i < numReferences; i++) {
+        int currentPage = pageReferences[i];
+        int pageFound = 0;
+
+        // Check if the page is already in the page frames
+        for (int j = 0; j < capacity; j++) {
+            if (pageFrame[j] == currentPage) {
+                pageFound = 1;
+                counter[j] = i; // Update the counter value
+                break;
+            }
+        }
+
+        if (!pageFound) {
+            // Page fault, replace the least recently used page
+            int minCounterIndex = 0;
+            for (int j = 1; j < capacity; j++) {
+                if (counter[j] < counter[minCounterIndex]) {
+                    minCounterIndex = j;
+                }
+            }
+
+            pageFrame[minCounterIndex] = currentPage;
+            counter[minCounterIndex] = i;
+            pageFaults++;
+
+            // Display the current page frames
+            printf("Page Frames: ");
+            for (int j = 0; j < capacity; j++) {
+                printf("%d ", pageFrame[j]);
+            }
+            printf("\n");
+        }
+    }
+
+    printf("Total Page Faults: %d\n", pageFaults);
+}
+
+int main() {
+    int numReferences, capacity;
+
+    printf("Enter the number of page references: ");
+    scanf("%d", &numReferences);
+
+    if (numReferences <= 0) {
+        printf("Invalid number of page references.\n");
+        return 1;
+    }
+
+    printf("Enter the capacity of page frames: ");
+    scanf("%d", &capacity);
+
+    if (capacity <= 0 || capacity > MAX_PAGES) {
+        printf("Invalid capacity.\n");
+        return 1;
+    }
+
+    int pageReferences[numReferences];
+
+    printf("Enter the page references:\n");
+    for (int i = 0; i < numReferences; i++) {
+        scanf("%d", &pageReferences[i]);
+    }
+
+    lruPageReplacement(pageReferences, numReferences, capacity);
+
+    return 0;
+}
+
