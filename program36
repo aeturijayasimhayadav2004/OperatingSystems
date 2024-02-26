@@ -1,0 +1,76 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX_BLOCKS 100
+
+// Structure to represent a disk block in the file
+struct DiskBlock {
+    int blockNumber;
+    char data[50];
+    struct DiskBlock* nextBlock;
+};
+
+// Structure to represent a file in the directory
+struct File {
+    char fileName[20];
+    struct DiskBlock* firstBlock;
+    struct DiskBlock* lastBlock;
+};
+
+// Function to create a new disk block
+struct DiskBlock* createDiskBlock(int blockNumber, const char* data) {
+    struct DiskBlock* newBlock = (struct DiskBlock*)malloc(sizeof(struct DiskBlock));
+    newBlock->blockNumber = blockNumber;
+    strcpy(newBlock->data, data);
+    newBlock->nextBlock = NULL;
+    return newBlock;
+}
+
+// Function to simulate the file allocation strategy
+void simulateLinkedAllocation(struct File* file) {
+    printf("File Name: %s\n", file->fileName);
+
+    // Print each block in the linked list
+    struct DiskBlock* currentBlock = file->firstBlock;
+    while (currentBlock != NULL) {
+        printf("Block Number: %d\tData: %s\n", currentBlock->blockNumber, currentBlock->data);
+        currentBlock = currentBlock->nextBlock;
+    }
+}
+
+// Function to add a new block to the file
+void addBlock(struct File* file, int blockNumber, const char* data) {
+    struct DiskBlock* newBlock = createDiskBlock(blockNumber, data);
+
+    if (file->firstBlock == NULL) {
+        // If it's the first block, update both first and last pointers
+        file->firstBlock = newBlock;
+        file->lastBlock = newBlock;
+    } else {
+        // Add the new block to the end of the linked list
+        file->lastBlock->nextBlock = newBlock;
+        file->lastBlock = newBlock;
+    }
+}
+
+int main() {
+    struct File file;
+    file.firstBlock = NULL;
+    file.lastBlock = NULL;
+
+    // Get the file name from the user
+    printf("Enter the file name: ");
+    scanf("%s", file.fileName);
+
+    // Simulate linked allocation by adding blocks to the file
+    addBlock(&file, 1, "Data Block 1");
+    addBlock(&file, 2, "Data Block 2");
+    addBlock(&file, 3, "Data Block 3");
+
+    // Simulate the linked allocation strategy
+    simulateLinkedAllocation(&file);
+
+    return 0;
+}
+
