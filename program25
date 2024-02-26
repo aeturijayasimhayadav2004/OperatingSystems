@@ -1,0 +1,69 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <dirent.h>
+
+int main() {
+    // Open a file for reading and writing
+    int fileDescriptor = open("example.txt", O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+    
+    if (fileDescriptor == -1) {
+        perror("Error opening file");
+        exit(EXIT_FAILURE);
+    }
+
+    printf("File opened successfully.\n");
+
+    // Use fcntl to set the file descriptor to non-blocking
+    int flags = fcntl(fileDescriptor, F_GETFL, 0);
+    flags |= O_NONBLOCK;
+    fcntl(fileDescriptor, F_SETFL, flags);
+
+    printf("File descriptor set to non-blocking mode.\n");
+
+    // Use lseek to move the file cursor to the end
+    lseek(fileDescriptor, 0, SEEK_END);
+
+    printf("File cursor moved to the end.\n");
+
+    // Use stat to obtain information about the file
+    struct stat fileStat;
+    if (stat("example.txt", &fileStat) == -1) {
+        perror("Error getting file information");
+        close(fileDescriptor);
+        exit(EXIT_FAILURE);
+    }
+
+    printf("File Size: %lld bytes\n", (long long)fileStat.st_size);
+    printf("File Permissions: %o\n", fileStat.st_mode & 0777);
+
+    // Open a directory and list its contents
+    DIR *dir = opendir(".");
+    struct dirent *dirEntry;
+
+    if (dir) {
+        printf("Directory listing:\n");
+        while ((dirEntry = readdir(dir)) != NULL) {
+            printf("%s\n", dirEntry->d_name);
+        }
+
+        closedir(dir);
+    } else {
+        perror("Error opening directory");
+        close(fileDescriptor);
+        exit(EXIT_FAILURE);
+    }
+
+    // Close the file
+    if (close(fileDescriptor) == -1) {
+        perror("Error closing file");
+        exit(EXIT_FAILURE);
+    }
+
+    printf("File closed successfully.\n");
+
+    return 0;
+}
