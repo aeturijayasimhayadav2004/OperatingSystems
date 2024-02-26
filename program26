@@ -1,0 +1,47 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+int main() {
+    FILE *file;
+    char fileName[] = "example.txt";
+    char buffer[100];
+
+    // Create and write to a file
+    file = fopen(fileName, "w");
+
+    if (file == NULL) {
+        perror("Error creating file");
+        exit(EXIT_FAILURE);
+    }
+
+    fprintf(file, "Hello, File Management!\n");
+    printf("Data written to the file.\n");
+
+    // Close the file
+    fclose(file);
+
+    // Open the file for reading
+    file = fopen(fileName, "r");
+
+    if (file == NULL) {
+        perror("Error opening file for reading");
+        exit(EXIT_FAILURE);
+    }
+
+    // Read from the file
+    fgets(buffer, sizeof(buffer), file);
+    printf("Data read from the file: %s", buffer);
+
+    // Close the file
+    fclose(file);
+
+    // Delete the file
+    if (remove(fileName) != 0) {
+        perror("Error deleting file");
+        exit(EXIT_FAILURE);
+    }
+
+    printf("File deleted successfully.\n");
+
+    return 0;
+}
