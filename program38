@@ -1,0 +1,103 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_REQUESTS 100
+
+// Function to simulate the SCAN disk scheduling algorithm
+void simulateSCAN(int requests[], int numRequests, int initialPosition, int direction) {
+    int totalHeadMovements = 0;
+    int visited[MAX_REQUESTS] = {0}; // To keep track of visited requests
+
+    // Print the header
+    printf("Movement Sequence: ");
+
+    // Determine the maximum track number
+    int maxTrack = 0;
+    for (int i = 0; i < numRequests; i++) {
+        if (requests[i] > maxTrack) {
+            maxTrack = requests[i];
+        }
+    }
+
+    // Start scanning
+    while (1) {
+        int found = 0;
+
+        // Scan in the specified direction
+        for (int i = 0; i < numRequests; i++) {
+            if (!visited[i]) {
+                if ((direction == 1 && requests[i] >= initialPosition) ||
+                    (direction == -1 && requests[i] <= initialPosition)) {
+                    // Service the request
+                    visited[i] = 1;
+                    totalHeadMovements += abs(requests[i] - initialPosition);
+
+                    // Update the initial position for the next iteration
+                    initialPosition = requests[i];
+
+                    // Print the movement sequence
+                    printf("%d", requests[i]);
+
+                    // Print separator (except for the last movement)
+                    if (i < numRequests - 1) {
+                        printf(" -> ");
+                    }
+
+                    found = 1;
+                }
+            }
+        }
+
+        // If no requests were found in the current direction, reverse direction
+        if (!found) {
+            direction = -direction;
+
+            // If all requests are visited, break the loop
+            int allVisited = 1;
+            for (int i = 0; i < numRequests; i++) {
+                if (!visited[i]) {
+                    allVisited = 0;
+                    break;
+                }
+            }
+
+            if (allVisited) {
+                break;
+            }
+        }
+    }
+
+    // Print the total head movements
+    printf("\nTotal Head Movements: %d\n", totalHeadMovements);
+}
+
+int main() {
+    int numRequests, initialPosition;
+
+    // Get the number of disk requests from the user
+    printf("Enter the number of disk requests: ");
+    scanf("%d", &numRequests);
+
+    if (numRequests <= 0 || numRequests > MAX_REQUESTS) {
+        printf("Invalid number of disk requests.\n");
+        return 1;
+    }
+
+    // Create an array to store the disk requests
+    int requests[MAX_REQUESTS];
+
+    // Get the initial position of the disk arm from the user
+    printf("Enter the initial position of the disk arm: ");
+    scanf("%d", &initialPosition);
+
+    // Get the disk requests from the user
+    printf("Enter the disk requests:\n");
+    for (int i = 0; i < numRequests; i++) {
+        scanf("%d", &requests[i]);
+    }
+
+    // Simulate the SCAN disk scheduling algorithm
+    simulateSCAN(requests, numRequests, initialPosition, 1);
+
+    return 0;
+}
