@@ -1,0 +1,103 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_REQUESTS 100
+
+// Function to simulate the C-SCAN disk scheduling algorithm
+void simulateCSCAN(int requests[], int numRequests, int initialPosition) {
+    int totalHeadMovements = 0;
+    int visited[MAX_REQUESTS] = {0}; // To keep track of visited requests
+
+    // Print the header
+    printf("Movement Sequence: ");
+
+    // Determine the maximum track number
+    int maxTrack = 0;
+    for (int i = 0; i < numRequests; i++) {
+        if (requests[i] > maxTrack) {
+            maxTrack = requests[i];
+        }
+    }
+
+    // Scan in the forward direction
+    for (int i = initialPosition; i <= maxTrack; i++) {
+        for (int j = 0; j < numRequests; j++) {
+            if (requests[j] == i && !visited[j]) {
+                // Service the request
+                visited[j] = 1;
+                totalHeadMovements += abs(requests[j] - initialPosition);
+
+                // Update the initial position for the next iteration
+                initialPosition = requests[j];
+
+                // Print the movement sequence
+                printf("%d", requests[j]);
+
+                // Print separator (except for the last movement)
+                if (i < maxTrack || j < numRequests - 1) {
+                    printf(" -> ");
+                }
+            }
+        }
+    }
+
+    // Jump to the beginning of the disk
+    totalHeadMovements += maxTrack - initialPosition;
+    initialPosition = 0;
+
+    // Scan in the forward direction again (skipping already visited requests)
+    for (int i = initialPosition; i <= maxTrack; i++) {
+        for (int j = 0; j < numRequests; j++) {
+            if (requests[j] == i && !visited[j]) {
+                // Service the request
+                visited[j] = 1;
+                totalHeadMovements += abs(requests[j] - initialPosition);
+
+                // Update the initial position for the next iteration
+                initialPosition = requests[j];
+
+                // Print the movement sequence
+                printf("%d", requests[j]);
+
+                // Print separator (except for the last movement)
+                if (i < maxTrack || j < numRequests - 1) {
+                    printf(" -> ");
+                }
+            }
+        }
+    }
+
+    // Print the total head movements
+    printf("\nTotal Head Movements: %d\n", totalHeadMovements);
+}
+
+int main() {
+    int numRequests, initialPosition;
+
+    // Get the number of disk requests from the user
+    printf("Enter the number of disk requests: ");
+    scanf("%d", &numRequests);
+
+    if (numRequests <= 0 || numRequests > MAX_REQUESTS) {
+        printf("Invalid number of disk requests.\n");
+        return 1;
+    }
+
+    // Create an array to store the disk requests
+    int requests[MAX_REQUESTS];
+
+    // Get the initial position of the disk arm from the user
+    printf("Enter the initial position of the disk arm: ");
+    scanf("%d", &initialPosition);
+
+    // Get the disk requests from the user
+    printf("Enter the disk requests:\n");
+    for (int i = 0; i < numRequests; i++) {
+        scanf("%d", &requests[i]);
+    }
+
+    // Simulate the C-SCAN disk scheduling algorithm
+    simulateCSCAN(requests, numRequests, initialPosition);
+
+    return 0;
+}
