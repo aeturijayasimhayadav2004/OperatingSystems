@@ -1,0 +1,7 @@
+Regular File:        -rw-r--r--
+Directory:           drwxr-xr-x
+Symbolic Link:       lrwxrwxrwx
+Character Device:    crw-rw-rw-
+Block Device:        brw-rw-rw-
+Named Pipe (FIFO):   prw-r--r--
+Socket:              srwxr-xr-x
