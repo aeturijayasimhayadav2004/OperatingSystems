@@ -1,0 +1,63 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX_REQUESTS 100
+
+// Function to simulate the FCFS disk scheduling algorithm
+void simulateFCFS(int requests[], int numRequests, int initialPosition) {
+    int totalHeadMovements = 0;
+
+    // Print the header
+    printf("Movement Sequence: ");
+
+    // Calculate head movements
+    for (int i = 0; i < numRequests; i++) {
+        // Print the movement sequence
+        printf("%d", requests[i]);
+
+        // Calculate head movement
+        totalHeadMovements += abs(requests[i] - initialPosition);
+
+        // Update the initial position for the next iteration
+        initialPosition = requests[i];
+
+        // Print separator (except for the last movement)
+        if (i < numRequests - 1) {
+            printf(" -> ");
+        }
+    }
+
+    // Print the total head movements
+    printf("\nTotal Head Movements: %d\n", totalHeadMovements);
+}
+
+int main() {
+    int numRequests, initialPosition;
+
+    // Get the number of disk requests from the user
+    printf("Enter the number of disk requests: ");
+    scanf("%d", &numRequests);
+
+    if (numRequests <= 0 || numRequests > MAX_REQUESTS) {
+        printf("Invalid number of disk requests.\n");
+        return 1;
+    }
+
+    // Create an array to store the disk requests
+    int requests[MAX_REQUESTS];
+
+    // Get the initial position of the disk arm from the user
+    printf("Enter the initial position of the disk arm: ");
+    scanf("%d", &initialPosition);
+
+    // Get the disk requests from the user
+    printf("Enter the disk requests:\n");
+    for (int i = 0; i < numRequests; i++) {
+        scanf("%d", &requests[i]);
+    }
+
+    // Simulate the FCFS disk scheduling algorithm
+    simulateFCFS(requests, numRequests, initialPosition);
+
+    return 0;
+}
